@@ -11,7 +11,7 @@ from datetime import datetime
 PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 23018
 BACKUP_DIR = Path(__file__).parent / "backups"
 BACKUP_DIR.mkdir(exist_ok=True)
-AUTH_TOKEN = "douNai_sakura_2026"  # simple auth token
+AUTH_TOKEN = os.environ.get("DOUNAI_TOKEN", "changeme")  # set via environment variable
 
 class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):

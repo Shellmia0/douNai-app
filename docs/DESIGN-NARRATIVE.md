@@ -465,7 +465,6 @@ git push → 线上自动更新
 ### B. 项目链接
 
 - 线上地址: https://shellmia0.github.io/douNai-app/
-- 备用地址: http://49.232.32.77:23018
 - GitHub: https://github.com/Shellmia0/douNai-app
 
 ---
