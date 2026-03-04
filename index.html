@@ -289,6 +289,30 @@
         </div>
 
         <div class="settings-section">
+          <h3>☁️ 云端备份</h3>
+          <p class="settings-desc">自动同步数据到服务器，换手机也不怕丢</p>
+          <div class="sync-form">
+            <div class="sync-row">
+              <label>服务器</label>
+              <input type="text" id="syncServer" placeholder="http://49.232.32.77:23018">
+            </div>
+            <div class="sync-row">
+              <label>密钥</label>
+              <input type="password" id="syncToken" placeholder="输入同步密钥">
+            </div>
+            <div class="sync-actions">
+              <button class="btn-primary btn-sm" id="syncEnableBtn">开启同步</button>
+              <button class="btn-outline btn-sm" id="syncRestoreBtn">从云端恢复</button>
+              <button class="btn-outline btn-sm" id="syncDisableBtn" style="display:none">关闭同步</button>
+            </div>
+            <div class="sync-row">
+              <span class="sync-label-text">同步状态：</span>
+              <span class="sync-status off" id="syncStatus">未开启</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-section">
           <h3>数据管理</h3>
           <button class="btn-outline" id="exportBtn">📤 导出数据</button>
           <button class="btn-outline" id="importBtn">📥 导入数据</button>

@@ -51,9 +51,93 @@
 
   function saveState() {
     localStorage.setItem('douNai_state', JSON.stringify(state));
+    // Auto cloud backup (debounced)
+    scheduleCloudBackup();
   }
 
   let state = getState();
+
+  // ===== Cloud Sync =====
+  const SYNC_CONFIG_KEY = 'douNai_sync';
+  let syncTimer = null;
+
+  function getSyncConfig() {
+    const raw = localStorage.getItem(SYNC_CONFIG_KEY);
+    if (raw) return JSON.parse(raw);
+    return { enabled: false, serverUrl: '', token: '', lastSync: null };
+  }
+
+  function saveSyncConfig(cfg) {
+    localStorage.setItem(SYNC_CONFIG_KEY, JSON.stringify(cfg));
+  }
+
+  function scheduleCloudBackup() {
+    const cfg = getSyncConfig();
+    if (!cfg.enabled || !cfg.serverUrl) return;
+    // Debounce: wait 3 seconds after last change
+    if (syncTimer) clearTimeout(syncTimer);
+    syncTimer = setTimeout(() => cloudBackup(cfg), 3000);
+  }
+
+  async function cloudBackup(cfg) {
+    if (!cfg) cfg = getSyncConfig();
+    if (!cfg.enabled || !cfg.serverUrl) return;
+    try {
+      const res = await fetch(cfg.serverUrl + '/api/backup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + cfg.token
+        },
+        body: JSON.stringify(state)
+      });
+      if (res.ok) {
+        cfg.lastSync = new Date().toISOString();
+        saveSyncConfig(cfg);
+        updateSyncStatus();
+      }
+    } catch (e) {
+      console.warn('Cloud backup failed:', e);
+    }
+  }
+
+  async function cloudRestore() {
+    const cfg = getSyncConfig();
+    if (!cfg.enabled || !cfg.serverUrl) return false;
+    try {
+      const res = await fetch(cfg.serverUrl + '/api/backup', {
+        headers: { 'Authorization': 'Bearer ' + cfg.token }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.points !== undefined) {
+          state = data;
+          localStorage.setItem('douNai_state', JSON.stringify(state));
+          return true;
+        }
+      }
+    } catch (e) {
+      console.warn('Cloud restore failed:', e);
+    }
+    return false;
+  }
+
+  function updateSyncStatus() {
+    const el = document.getElementById('syncStatus');
+    if (!el) return;
+    const cfg = getSyncConfig();
+    if (!cfg.enabled) {
+      el.textContent = '未开启';
+      el.className = 'sync-status off';
+    } else if (cfg.lastSync) {
+      const t = new Date(cfg.lastSync);
+      el.textContent = `已同步 ${t.getHours().toString().padStart(2,'0')}:${t.getMinutes().toString().padStart(2,'0')}`;
+      el.className = 'sync-status on';
+    } else {
+      el.textContent = '已开启，等待首次同步';
+      el.className = 'sync-status on';
+    }
+  }
 
   // ===== Utilities =====
   function today() {
@@ -711,6 +795,54 @@
 
     document.getElementById('journalSubmitBtn').addEventListener('click', submitJournal);
     document.getElementById('journalEditBtn').addEventListener('click', editJournal);
+
+    // Sync settings
+    const syncCfg = getSyncConfig();
+    document.getElementById('syncServer').value = syncCfg.serverUrl || '';
+    document.getElementById('syncToken').value = syncCfg.token || '';
+    if (syncCfg.enabled) {
+      document.getElementById('syncEnableBtn').style.display = 'none';
+      document.getElementById('syncDisableBtn').style.display = '';
+    }
+    updateSyncStatus();
+
+    document.getElementById('syncEnableBtn').addEventListener('click', () => {
+      const url = document.getElementById('syncServer').value.trim().replace(/\/$/, '');
+      const token = document.getElementById('syncToken').value.trim();
+      if (!url || !token) { showToast('请填写服务器地址和密钥'); return; }
+      const cfg = { enabled: true, serverUrl: url, token: token, lastSync: null };
+      saveSyncConfig(cfg);
+      cloudBackup(cfg);
+      document.getElementById('syncEnableBtn').style.display = 'none';
+      document.getElementById('syncDisableBtn').style.display = '';
+      showToast('☁️ 云端同步已开启');
+      updateSyncStatus();
+    });
+
+    document.getElementById('syncDisableBtn').addEventListener('click', () => {
+      const cfg = getSyncConfig();
+      cfg.enabled = false;
+      saveSyncConfig(cfg);
+      document.getElementById('syncEnableBtn').style.display = '';
+      document.getElementById('syncDisableBtn').style.display = 'none';
+      showToast('云端同步已关闭');
+      updateSyncStatus();
+    });
+
+    document.getElementById('syncRestoreBtn').addEventListener('click', async () => {
+      const url = document.getElementById('syncServer').value.trim().replace(/\/$/, '');
+      const token = document.getElementById('syncToken').value.trim();
+      if (!url || !token) { showToast('请先填写服务器和密钥'); return; }
+      saveSyncConfig({ enabled: true, serverUrl: url, token: token, lastSync: null });
+      showToast('正在从云端恢复...');
+      const ok = await cloudRestore();
+      if (ok) {
+        renderAll();
+        showCelebration('☁️', '数据已从云端恢复！');
+      } else {
+        showToast('❌ 恢复失败，云端可能没有备份');
+      }
+    });
 
     // Custom reward
     document.getElementById('addRewardBtn').addEventListener('click', addCustomReward);

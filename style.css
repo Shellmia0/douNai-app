@@ -991,6 +991,54 @@ body {
   min-width: 150px;
 }
 
+/* Sync Settings */
+.sync-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sync-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sync-row label {
+  font-size: 13px;
+  color: var(--warm-mid);
+  min-width: 45px;
+}
+
+.sync-row input {
+  flex: 1;
+  padding: 8px 10px;
+  border: 2px solid var(--pink-100);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+}
+
+.sync-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sync-label-text {
+  font-size: 13px;
+  color: var(--warm-light);
+}
+
+.sync-status {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.sync-status.off { color: var(--warm-light); }
+.sync-status.on { color: var(--green-400); }
+
 .about-text {
   text-align: center;
   font-size: 14px;
