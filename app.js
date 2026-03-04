@@ -244,9 +244,19 @@
       closeCard.style.display = 'none';
     }
 
-    // Restore mood & journal
+    // Update diary date/time
+    const now = new Date();
+    document.getElementById('diaryMonth').textContent = now.getMonth() + 1;
+    document.getElementById('diaryDay').textContent = now.getDate();
+    document.getElementById('diaryWeekday').textContent = '星期' + '日一二三四五六'[now.getDay()];
+    document.getElementById('diaryTime').textContent = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+
+    // Restore mood & weather
     document.querySelectorAll('.mood-btn').forEach(btn => {
       btn.classList.toggle('selected', btn.dataset.mood === day.mood);
+    });
+    document.querySelectorAll('.weather-btn').forEach(btn => {
+      btn.classList.toggle('selected', btn.dataset.weather === day.weather);
     });
 
     const journalInput = document.getElementById('journalInput');
@@ -364,6 +374,7 @@
       item.innerHTML = `
         <div class="history-date">
           ${date.slice(5).replace('-', '月') + '日'}
+          ${day.weather ? `<span class="history-weather">${day.weather}</span>` : ''}
           ${day.mood ? `<span class="history-mood">${day.mood}</span>` : ''}
         </div>
         <div class="history-detail">
@@ -644,6 +655,27 @@
 
     // Settle day
     document.getElementById('closeBtn').addEventListener('click', settleDay);
+
+    // Weather selection
+    const weatherLabels = {
+      '☀️': '晴朗的一天',
+      '⛅': '多云天气',
+      '🌧️': '下雨了',
+      '❄️': '下雪啦',
+      '🌫️': '雾蒙蒙的'
+    };
+    document.querySelectorAll('.weather-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const day = getDay(today());
+        day.weather = btn.dataset.weather;
+        saveState();
+        document.querySelectorAll('.weather-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        btn.style.transform = 'scale(1.3)';
+        setTimeout(() => { btn.style.transform = 'scale(1.1)'; }, 150);
+        showToast(`${btn.dataset.weather} ${weatherLabels[btn.dataset.weather] || ''}`);
+      });
+    });
 
     // Mood selection
     const moodLabels = {
