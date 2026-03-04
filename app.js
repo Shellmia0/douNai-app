@@ -646,6 +646,13 @@
     document.getElementById('closeBtn').addEventListener('click', settleDay);
 
     // Mood selection
+    const moodLabels = {
+      '😊': '心情不错！',
+      '😐': '平平淡淡～',
+      '😫': '辛苦了，抱抱',
+      '💪': '今天很有干劲！',
+      '😴': '累了就休息一下～'
+    };
     document.querySelectorAll('.mood-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const day = getDay(today());
@@ -653,6 +660,12 @@
         saveState();
         document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
         btn.classList.add('selected');
+        // Bounce animation
+        btn.style.transform = 'scale(1.3)';
+        setTimeout(() => { btn.style.transform = 'scale(1.1)'; }, 150);
+        // Feedback toast
+        const label = moodLabels[btn.dataset.mood] || '已记录';
+        showToast(`${btn.dataset.mood} ${label}`);
       });
     });
 

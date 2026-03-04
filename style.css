@@ -395,8 +395,13 @@ body {
 
 .mood-btn.selected {
   border-color: var(--pink-400);
-  background: var(--pink-50);
+  background: var(--pink-100);
   transform: scale(1.1);
+  box-shadow: 0 0 12px rgba(255,107,138,0.3);
+}
+
+.mood-btn:active {
+  transform: scale(0.9);
 }
 
 /* ===== Journal / Reflection ===== */
