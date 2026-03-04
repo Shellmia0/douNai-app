@@ -110,3 +110,4 @@ Traceback (most recent call last):
        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 TypeError: argument of type 'HTTPStatus' is not a container or iterable
 ----------------------------------------
+127.0.0.1 - - [04/Mar/2026 16:12:30] "GET /api/health HTTP/1.1" 200 -
