@@ -915,6 +915,19 @@
     renderAll();
   }
 
+  // Re-render when page becomes visible again (fixes stale date in PWA / background tabs)
+  let lastDate = today();
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      const now = today();
+      if (now !== lastDate) {
+        lastDate = now;
+        document.getElementById('todayDate').textContent = todayDisplay();
+      }
+      renderAll();
+    }
+  });
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
